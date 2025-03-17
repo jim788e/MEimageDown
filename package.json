@@ -1,0 +1,29 @@
+{
+  "name": "meimagedown",
+  "version": "1.0.0",
+  "description": "A script to fetch NFT token data and image URLs from Magic Eden's API",
+  "main": "fetch_tokens.js",
+  "scripts": {
+    "start": "node fetch_tokens.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jim788e/MEimageDown.git"
+  },
+  "keywords": [
+    "magic-eden",
+    "nft",
+    "sei",
+    "blockchain"
+  ],
+  "author": "jim788e",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jim788e/MEimageDown/issues"
+  },
+  "homepage": "https://github.com/jim788e/MEimageDown#readme",
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "node-fetch": "^2.7.0"
+  }
+} 
