@@ -4,8 +4,17 @@ const fetch = require('node-fetch');
 
 const NFT_CONTRACT = process.env.NFT_CONTRACT;
 const MAGIC_EDEN_API_KEY = process.env.MAGIC_EDEN_API_KEY;
+const EVM_CHAIN = process.env.EVM_CHAIN || 'ethereum';
 const TOTAL_TOKENS = 3332; // Total number of tokens to fetch
 const BATCH_SIZE = 20;
+
+// Validate EVM chain
+const VALID_CHAINS = ['ethereum', 'arbitrum', 'base', 'berachain', 'bsc', 'monad-testnet', 'polygon', 'sei'];
+if (!VALID_CHAINS.includes(EVM_CHAIN)) {
+    console.error(`Invalid EVM chain: ${EVM_CHAIN}`);
+    console.error(`Valid options are: ${VALID_CHAINS.join(', ')}`);
+    process.exit(1);
+}
 
 async function fetchTokens(continuation = null) {
     const options = {
@@ -16,7 +25,7 @@ async function fetchTokens(continuation = null) {
         }
     };
 
-    let url = `https://api-mainnet.magiceden.dev/v3/rtp/sei/tokens/v6?collection=${NFT_CONTRACT}&limit=${BATCH_SIZE}&sortBy=tokenId&sortDirection=asc`;
+    let url = `https://api-mainnet.magiceden.dev/v3/rtp/${EVM_CHAIN}/tokens/v6?collection=${NFT_CONTRACT}&limit=${BATCH_SIZE}&sortBy=tokenId&sortDirection=asc`;
     if (continuation) {
         url += `&continuation=${continuation}`;
     }
@@ -50,6 +59,9 @@ async function fetchTokens(continuation = null) {
 }
 
 async function main() {
+    console.log(`Starting token fetch for ${EVM_CHAIN} chain...`);
+    console.log(`Contract address: ${NFT_CONTRACT}`);
+    
     const csvRows = ['tokenId,imageUrl\n'];
     let processedTokens = new Set(); // To avoid duplicates
     let totalProcessed = 0;
@@ -91,9 +103,16 @@ async function main() {
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    // Write to CSV file
-    fs.writeFileSync('token_images.csv', csvRows.join(''));
-    console.log(`\nData has been saved to token_images.csv. Total unique tokens: ${processedTokens.size}`);
+    // Create output directory if it doesn't exist
+    const outputDir = 'output';
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir);
+    }
+
+    // Save to chain-specific CSV file
+    const outputFile = `output/${EVM_CHAIN}_token_images.csv`;
+    fs.writeFileSync(outputFile, csvRows.join(''));
+    console.log(`\nData has been saved to ${outputFile}. Total unique tokens: ${processedTokens.size}`);
     
     if (processedTokens.size < TOTAL_TOKENS) {
         console.log(`\nWarning: Only fetched ${processedTokens.size} tokens out of ${TOTAL_TOKENS} expected tokens.`);
